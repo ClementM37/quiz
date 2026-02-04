@@ -1,4 +1,4 @@
-from.app import app
-import quiz.todo.views
-import quiz.todo.models
-import quiz.todo.commands
+from .app import app, db
+from . import views
+from . import models
+from . import commands
