@@ -51,7 +51,7 @@ def delete_questionnaire(id):
     return '', 204
 
 @app.route('/api/questions', methods=['GET'])
-def get_all_questions():
+def get_all_questions_route():
     all_questions = get_all_questions()
     return jsonify([q.to_json() for q in all_questions])
 
@@ -94,6 +94,29 @@ def create_question(questionnaire_id):
     db.session.add(question)
     db.session.commit()
     return jsonify(question.to_json()), 201
+
+@app.route('/api/questionnaires/<int:questionnaire_id>/questions/<int:question_id>', methods=['PUT'])
+def update_question(questionnaire_id, question_id):
+    question = Question.query.filter_by(id=question_id, questionnaire_id=questionnaire_id).first()
+    if question is None:
+        abort(404)
+    
+    data = request.json
+    if not data:
+        abort(400)
+
+    if 'numero' in data: question.numero = data['numero']
+    if 'texte' in data: question.texte = data['texte']
+
+    if question.type == 'ouverte' and 'reponse' in data:
+        question.reponse = data['reponse']
+    elif question.type == 'fermee':
+        if 'proposition1' in data: question.proposition1 = data['proposition1']
+        if 'proposition2' in data: question.proposition2 = data['proposition2']
+        if 'bonne_reponse' in data: question.bonne_reponse = data['bonne_reponse']
+
+    db.session.commit()
+    return jsonify(question.to_json())
 
 @app.route('/api/questionnaires/<int:questionnaire_id>/questions/<int:question_id>', methods=['DELETE'])
 def delete_question(questionnaire_id, question_id):
